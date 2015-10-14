@@ -11,7 +11,8 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var display: UILabel!
-
+    @IBOutlet weak var history: UILabel!
+    
     var userIsInTheMiddleOfTypingANumber = false;
     var userHasPressedPeriod = false
     
@@ -32,6 +33,8 @@ class ViewController: UIViewController {
         if userIsInTheMiddleOfTypingANumber {
             enter()
         }
+        
+        addToHistory("\(sender.currentTitle!)\n")
         
         switch operation {
             case "×": performOperation { $0 * $1 }
@@ -87,7 +90,8 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTypingANumber = false
         userHasPressedPeriod = false
         operandStack.append(displayValue)
-        print("operandStack = \(operandStack)")
+        
+        addToHistory("\(displayValue)\n")
     }
     
     var displayValue: Double {
@@ -98,6 +102,10 @@ class ViewController: UIViewController {
             display.text = "\(newValue)"
             userIsInTheMiddleOfTypingANumber = false
         }
+    }
+    
+    private func addToHistory(value: String) {
+        history.text!.insertContentsOf(value.characters, at: history.text!.startIndex)
     }
 }
 
