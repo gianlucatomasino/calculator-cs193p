@@ -15,6 +15,7 @@ class ViewController: UIViewController {
     
     var userIsInTheMiddleOfTypingANumber = false;
     var userHasPressedPeriod = false
+    var operandStack = Array<Double>()
     
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
@@ -44,6 +45,11 @@ class ViewController: UIViewController {
             case "√": performOperation {sqrt($0)}
             case "sin" : performOperation {sin($0)}
             case "cos": performOperation {cos($0)}
+            case "C":
+                operandStack.removeAll()
+                history.text = ""
+                display.text = ""
+                displayValue = 0
             default: break
         }
     }
@@ -53,7 +59,7 @@ class ViewController: UIViewController {
             enter()
         }
         
-        display.text = "3.14"
+        display.text = "\(M_PI)"
         enter()
     }
     
@@ -82,9 +88,6 @@ class ViewController: UIViewController {
             userIsInTheMiddleOfTypingANumber = true
         }
     }
-    
-    
-    var operandStack = Array<Double>()
     
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
