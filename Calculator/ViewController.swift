@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     var userIsInTheMiddleOfTypingANumber = false;
     var userHasPressedPeriod = false
     var operandStack = Array<Double>()
+    var brain = CalculatorBrain()
     
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
@@ -29,28 +30,19 @@ class ViewController: UIViewController {
     }
     
     @IBAction func operate(sender: UIButton) {
-        let operation = sender.currentTitle!
-        
         if userIsInTheMiddleOfTypingANumber {
             enter()
         }
         
         addToHistory("\(sender.currentTitle!)\n")
         
-        switch operation {
-            case "×": performOperation { $0 * $1 }
-            case "−": performOperation { $1 - $0 }
-            case "+": performOperation { $0 + $1 }
-            case "÷": performOperation { $1 / $0 }
-            case "√": performOperation {sqrt($0)}
-            case "sin" : performOperation {sin($0)}
-            case "cos": performOperation {cos($0)}
-            case "C":
-                operandStack.removeAll()
-                history.text = ""
-                display.text = ""
+        if let operation = sender.currentTitle {
+            if let result = brain.performOperation(operation) {
+                displayValue = result
+                addToHistory("\(result)\n")
+            } else {
                 displayValue = 0
-            default: break
+            }
         }
     }
     
@@ -61,20 +53,6 @@ class ViewController: UIViewController {
         
         display.text = "\(M_PI)"
         enter()
-    }
-    
-    private func performOperation(operation: (Double, Double) -> Double) {
-        if operandStack.count >= 2 {
-            displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
-            enter()
-        }
-    }
-    
-    private func performOperation(operation: Double -> Double) {
-        if operandStack.count >= 1 {
-            displayValue = operation(operandStack.removeLast())
-            enter()
-        }
     }
     
     @IBAction func period() {
@@ -92,14 +70,22 @@ class ViewController: UIViewController {
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
         userHasPressedPeriod = false
-        operandStack.append(displayValue)
         
-        addToHistory("\(displayValue)\n")
+        if let result = brain.pushOperand(displayValue) {
+            displayValue = result
+            addToHistory("\(displayValue)\n")
+        } else {
+            displayValue = 0
+        }
     }
     
     var displayValue: Double {
         get {
-            return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
+            let formatter = NSNumberFormatter()
+            formatter.numberStyle = NSNumberFormatterStyle.DecimalStyle
+            formatter.paddingCharacter = ","
+            formatter.decimalSeparator = "."
+            return formatter.numberFromString(display.text!)!.doubleValue
         }
         set {
             display.text = "\(newValue)"
@@ -108,7 +94,11 @@ class ViewController: UIViewController {
     }
     
     private func addToHistory(value: String) {
-        history.text!.insertContentsOf(value.characters, at: history.text!.startIndex)
+        if let actual = history.text {
+            history.text = value + actual
+        } else {
+            history.text = value
+        }
     }
 }
 
